@@ -489,7 +489,7 @@ def plot_2d(data, colormap='viridis', threshold=False):
     """
 
     """
-    x = map(float, data.columns)
+    x = list(map(float, data.columns))
     t = data.index
     values = np.array(data.values)
 
