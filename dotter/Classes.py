@@ -35,6 +35,7 @@ class Stream:
     Main 'model/geometry' class. Initials with a parameter dictionary
     """
     def __init__(self, **parameters):
+        self.path = parameters['path']
         self.result = {'x': [], 'waterdepth': [], 'A': [], 'R': []}
         self.parameters = parameters
         self.grid_rg = []

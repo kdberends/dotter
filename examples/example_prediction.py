@@ -23,7 +23,7 @@ import sys
 # =============================================================================
 
 interactive = False
-RunCaseNumber = 1  # (python has zero-based indexing, so '0' means first case)
+RunCaseNumber = 2  # (python has zero-based indexing, so '0' means first case)
 
 # =============================================================================
 # Main code
@@ -42,18 +42,11 @@ def main(case):
     stream = dotter.build_model_from_config('cases/{}/config.ini'.format(case))
 
     # Run the model
+    stream.parameters['Q'] = 1.27
+    stream.parameters['n'] = 0.1
+    stream.generate_grid()
     results, stream = dotter.run_model(stream)
 
-    # Move results to case_folder
-    try:
-        os.mkdir('cases/{}/output'.format(case))
-    except OSError:
-        # Dir already exists
-        pass
-
-    for filename in ['waterdepth', 'roughness', 'waterlevel', 'max_allowed_waterlevel', 'percentagebegroeiing', 'discharge']:
-        shutil.move('{}.csv'.format(
-            filename), 'cases/{case}/output/{fname}.csv'.format(case=case, fname=filename))
 
     # =============================================================================
     # Plot results

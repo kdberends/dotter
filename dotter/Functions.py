@@ -13,6 +13,7 @@ import numpy as np
 from matplotlib import animation, image
 import matplotlib.pyplot as plt
 import sys
+import os
 import pandas as pd
 from configparser import ConfigParser
 from datetime import datetime, timedelta
@@ -138,7 +139,7 @@ def constantmanning(geometry, time=None, timestep=None):
     """
 
     """
-    if geometry.parameters['use_homogeneous_friction']:
+    if geometry.parameters['use_constant_friction']:
         geometry.grid_n = [geometry.parameters['constant_friction']] * len(geometry.grid_n)
     else:
         pass
@@ -356,19 +357,27 @@ def qs_solver(geometry=None, restart=None, verbose=True, write_to_file=True, sta
     # Write output
     # -------------------------------------------------------------------------
     if verbose: sys.stdout.write('[Computation done]\n')
+    
     if write_to_file:
+        outputpath = '{}/output'.format(geometry.path)
+        try:
+            os.mkdir(outputpath)
+        except OSError:
+            # Dir already exists
+            pass
+
         if verbose: sys.stdout.write('Writing output to file...\n')
-        results['n'].to_csv('roughness.csv', sep=',')
+        results['n'].to_csv('{}/roughness.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Roughness written to roughness.csv\n')
-        results['discharge'].to_csv('discharge.csv', sep=',')
+        results['discharge'].to_csv('{}/discharge.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Discharge written to discharge.csv\n')
-        results['waterdepth'].to_csv('waterdepth.csv', sep=',')
+        results['waterdepth'].to_csv('{}/waterdepth.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Waterdepth written to waterdepth.csv\n')
-        results['waterlevel'].to_csv('waterlevel.csv', sep=',')
+        results['waterlevel'].to_csv('{}/waterlevel.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Waterlevel written to waterlevel.csv\n')
-        results['max_allowed_waterlevel'].to_csv('max_allowed_waterlevel.csv', sep=',')
+        results['max_allowed_waterlevel'].to_csv('{}/max_allowed_waterlevel.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Max. waterlevel written to max_allowed_waterlevel.csv\n')
-        results['fa'].to_csv('percentagebegroeiing.csv', sep=',')
+        results['fa'].to_csv('{}/percentagebegroeiing.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('percentagebegroeiing written to percentagebegroeiing.csv\n')
 
     return results, geometry
