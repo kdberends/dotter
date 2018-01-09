@@ -33,7 +33,7 @@ def log_progress(sequence, every=None, size=None, name='Items'):
     index = 0
     try:
         for index, record in enumerate(sequence, 1):
-            if index == 1 or index % every == 0:
+            if (index == 1) or (index % every == 0):
                 if is_iterator:
                     label.value = '{name}: {index} / ?'.format(
                         name=name,

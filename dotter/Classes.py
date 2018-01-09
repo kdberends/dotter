@@ -54,7 +54,7 @@ class Stream:
         x = list()
         theta = list()
         w = list()
-        fa = list()
+        blockage = list()
         vg = list()
         zb = list()
         sl = list()
@@ -70,7 +70,7 @@ class Stream:
                 zb.append(s.cell(row, 3).value) # bodemhoogte
                 sl.append(s.cell(row, 4).value) # slibhoogte
                 n.append(s.cell(row, 5).value) # manning coefficient
-                fa.append(s.cell(row, 6).value)  # == 1-vo (dus fa = percentage begroeiing)
+                blockage.append(s.cell(row, 6).value)  # == 1-vo (dus fa = percentage begroeiing)
                 vg.append(s.cell(row, 7).value) # vegetatie-id
                 try:
                     maxh.append(s.cell(row, 8).value) # maximale waterstand (ter visualisatie)
@@ -83,7 +83,7 @@ class Stream:
         self.n = np.array(n)
         self.bedwidth = np.array(w) 
         self.theta = np.array(theta)
-        self.fa = np.array(fa)
+        self.blockage = np.array(blockage)
         self.vg = np.array(vg) 
         self.maxh = np.array(maxh)
         self.length = max(self.x)
@@ -99,7 +99,7 @@ class Stream:
         self.grid_i = np.round(self.grid_i, decimals=10)
         self.grid_width = np.interp(self.grid_x, self.x, self.bedwidth)
         self.grid_theta = np.interp(self.grid_x, self.x, self.theta)
-        self.grid_fa = np.interp(self.grid_x, self.x, self.fa)
+        self.grid_blockage = np.interp(self.grid_x, self.x, self.blockage)
         self.grid_vg = np.interp(self.grid_x, self.x, self.vg)
         self.grid_maxh = np.interp(self.grid_x, self.x, self.maxh)
 

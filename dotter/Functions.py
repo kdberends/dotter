@@ -115,23 +115,23 @@ def pitlogriffioenlinear(geometry, time=None, timestep=None):
     """
 
     if time is not None:
-        for i, fa in enumerate(geometry.grid_fa):
+        for i, fa in enumerate(geometry.grid_blockage):
             # Check whether in growth season
             if (time.month > geometry.grid_grow_month[i]) & (time.month < (geometry.grid_grow_month[i] + geometry.grid_grow_season[i])):
                 # In growth season, use 'rg'
-                geometry.grid_fa[i] += malthusian_growth(geometry.grid_fa[i], geometry.grid_rg[i], geometry.grid_K[i]) * timestep
+                geometry.grid_blockage[i] += malthusian_growth(geometry.grid_blockage[i], geometry.grid_rg[i], geometry.grid_K[i]) * timestep
             else:
                 # not in growth season,  use 'rd'
-                geometry.grid_fa[i] += malthusian_growth(geometry.grid_fa[i], geometry.grid_rd[i], geometry.grid_K[i]) * timestep
-                geometry.grid_fa[i] = np.max([geometry.grid_fa[i], 0.01])
-                geometry.grid_fa[i] += malthusian_growth(geometry.grid_fa[i], geometry.grid_rd[i], geometry.grid_K[i]) * timestep
+                geometry.grid_blockage[i] += malthusian_growth(geometry.grid_blockage[i], geometry.grid_rd[i], geometry.grid_K[i]) * timestep
+                geometry.grid_blockage[i] = np.max([geometry.grid_blockage[i], 0.01])
+                geometry.grid_blockage[i] += malthusian_growth(geometry.grid_blockage[i], geometry.grid_rd[i], geometry.grid_K[i]) * timestep
             
             # 'Pitlo-Griffioen model' (see Pitlo & Griffioen, 1991)
             # Oorspronkelijk model: vo = 3.33*km 
             # 100 * fa = 100-vo
             # n = 0.0333 / (1 - fa)
             #   
-            geometry.grid_n[i] = 0.0333 / (1 - geometry.grid_fa[i])
+            geometry.grid_n[i] = 0.0333 / (1 - geometry.grid_blockage[i])
             
     return manning, geometry
 
@@ -291,7 +291,7 @@ def qs_solver(geometry=None, restart=None, verbose=True, write_to_file=True, sta
     if restart is None:
         results = {'x': pd.DataFrame(index=time, columns=geometry.grid_x),
                    'n': pd.DataFrame(index=time, columns=geometry.grid_x),
-                   'fa': pd.DataFrame(index=time, columns=geometry.grid_x),
+                   'blockage': pd.DataFrame(index=time, columns=geometry.grid_x),
                    'waterdepth': pd.DataFrame(index=time, columns=geometry.grid_x),
                    'waterlevel': pd.DataFrame(index=time, columns=geometry.grid_x),
                    'max_allowed_waterlevel': pd.DataFrame(index=time, columns=geometry.grid_x),
@@ -326,7 +326,7 @@ def qs_solver(geometry=None, restart=None, verbose=True, write_to_file=True, sta
             if np.any(events):
                 for event in events:
                     if verbose: sys.stdout.write('Event %s Triggered on %s\n' % (event.name, t))
-                    geometry.grid_fa[(geometry.grid_x > event.min) & (geometry.grid_x < event.max)] *= (1 - event.effectivity)
+                    geometry.grid_blockage[(geometry.grid_x > event.min) & (geometry.grid_x < event.max)] *= (1 - event.effectivity)
 
         # Vegetation growth model 
         # ---------------------------------------------------------------------         
@@ -343,7 +343,7 @@ def qs_solver(geometry=None, restart=None, verbose=True, write_to_file=True, sta
         results['x'].loc[t] = geometry.grid_x
         results['n'].loc[t] = geometry.grid_n
         results['discharge'].loc[t] = geometry.grid_Q
-        results['fa'].loc[t] = geometry.grid_fa
+        results['blockage'].loc[t] = geometry.grid_blockage
         results['waterdepth'].loc[t] = geometry.result['waterdepth']
         results['waterlevel'].loc[t] = geometry.result['waterlevel']
         results['max_allowed_waterlevel'].loc[t] = geometry.grid_maxh
@@ -377,7 +377,7 @@ def qs_solver(geometry=None, restart=None, verbose=True, write_to_file=True, sta
         if verbose: sys.stdout.write('Waterlevel written to waterlevel.csv\n')
         results['max_allowed_waterlevel'].to_csv('{}/max_allowed_waterlevel.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('Max. waterlevel written to max_allowed_waterlevel.csv\n')
-        results['fa'].to_csv('{}/percentagebegroeiing.csv'.format(outputpath), sep=',')
+        results['blockage'].to_csv('{}/blockage.csv'.format(outputpath), sep=',')
         if verbose: sys.stdout.write('percentagebegroeiing written to percentagebegroeiing.csv\n')
 
     return results, geometry
