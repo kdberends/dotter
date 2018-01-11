@@ -4,11 +4,40 @@ Dotter
 
 This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation. 
 
+The dottertools are distributed as a Python package. 
 
-Description
+Getting started
 ===========
 
-A longer description of your project goes here...
+The 
+
+
+
+Installation
+===========
+
+
+The current development branch of dotter can be installed from GitHub, also using ``pip``:
+
+::
+
+    pip install git+https://github.com/kdberends/dotter
+
+
+Dependencies
+============
+
+PyMC3 is tested on Python 3.6 and depends on NumPy,
+SciPy, Pandas, and Matplotlib (see ``requirements.txt`` for version
+information).
+
+Additionally, some notebooks make use of interactive widgets. To be able to correctly run the notebooks, you need to have ipywidgets installed and enabled; see `here <https://ipywidgets.readthedocs.io/en/stable/user_install.html>`__
+
+License
+=======
+
+`GPL License, Version
+3.0 <https://github.com/kdberends/dotter/blob/master/LICENSE>`__
 
 
 References
