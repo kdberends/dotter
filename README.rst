@@ -37,7 +37,7 @@ License
 =======
 
 `GPL License, Version
-3.0 <https://github.com/kdberends/dotter/LICENSE.txt>`__
+3.0 <https://github.com/kdberends/dotter/blob/master/LICENSE.txt>`__
 
 
 References
