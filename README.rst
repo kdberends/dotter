@@ -44,3 +44,18 @@ References
 
 This project has been set up using PyScaffold 2.5.8. For details and usage
 information on PyScaffold see http://pyscaffold.readthedocs.org/.
+
+
+Credit
+====
+The dotter consortium:
+
+.. image:: https://github.com/kdberends/ncrlatex/blob/master/ncrlatex/tex/ncrlatex/figures/deltareslogo.jpg
+    :height: 100px
+    :alt: deltares logo
+    :align: left
+
+.. image:: https://github.com/kdberends/ncrlatex/blob/master/ncrlatex/tex/ncrlatex/figures/Twentelogo.jpg
+    :height: 100px
+    :alt: deltares logo
+    :align: left
