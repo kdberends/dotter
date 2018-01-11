@@ -27,7 +27,7 @@ The current development branch of dotter can be installed from GitHub, also usin
 Dependencies
 ============
 
-PyMC3 is tested on Python 3.6 and depends on NumPy,
+Dotter is tested on Python 3.6 and depends on NumPy,
 SciPy, Pandas, and Matplotlib (see ``requirements.txt`` for version
 information).
 
@@ -37,7 +37,7 @@ License
 =======
 
 `GPL License, Version
-3.0 <https://github.com/kdberends/dotter/blob/master/LICENSE>`__
+3.0 <https://github.com/kdberends/dotter/LICENSE.txt>`__
 
 
 References
