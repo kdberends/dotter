@@ -1,9 +1,8 @@
 ======
-dotter
+Dotter
 ======
 
-
-An ecohydraulic tool
+This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation. 
 
 
 Description
@@ -12,7 +11,7 @@ Description
 A longer description of your project goes here...
 
 
-Note
+References
 ====
 
 This project has been set up using PyScaffold 2.5.8. For details and usage
