@@ -127,12 +127,13 @@ def estimate_roughness(model, every=1):
     model.logger.info('Optimising model-wide roughness factor')
     model.grid.friction[:] = np.nan
     for i, t in enumerate(tqdm(model.grid.time)):
+        guess = 0.03
         if i % every == 0:
-            res = optimize.minimize(__objectivefunction, 0.03, args=[model,t],
+            res = optimize.minimize(__objectivefunction, guess, args=[model,t],
                                                                tol=0.001,
                                                                method="Nelder-Mead",
                                                                options=dict(maxiter=50))
-
+            guess = res.x[0]
     # Clip roughness to values higher than 0
     model.grid.friction = model.grid.friction.clip(lower=0)
     # Linearly interpolate between optimized times
@@ -142,13 +143,13 @@ def blockage_analysis(model):
     """
 
     """
-    green = np.loadtxt('../data/green_2005.csv', skiprows=1, delimiter=',')
+    
     fig, axs = plt.subplots(2, 2, figsize=(10, 6))
     axs = axs.flatten()
     phi = np.linspace(0, 0.9, 100)
     axs[0].plot(model.grid.time, model.grid.friction.iloc[:, 0])
 
-    axs[1].plot(green.T[1], green.T[2], 'dk', label='Green 2005')
+    
     axs[1].plot(phi * 100, __pglinear(phi), '--k', label='pglinear (1991)')
     axs[1].plot(phi * 100, __green(phi), '-k', label='Green (2005)')
     axs[1].plot(phi * 100, __linneman(phi), '-.k', label='Linneman (2017)')

@@ -6,3 +6,4 @@ pandas>=0.22
 seaborn>=0.8.1
 ipywidgets
 nbformat>=4.2
+tqdm
