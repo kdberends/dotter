@@ -11,6 +11,10 @@ Getting started
 
 The easiest way to get started is to try out the interactive notebooks!
 
+To learn more about Dotter, see our `documentation <https://github.com/kdberends/dotter/wiki>`__
+
+ 
+
 
 Installation
 ===========
