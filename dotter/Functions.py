@@ -195,7 +195,7 @@ def load_plotting_config(filename):
 
 def belanger(waterdepth=0, friction=chezy, **parameters):
     """
-    The Belanger equation
+    The Belanger equation 
 
     Keyword arguments:
         waterdepth : float, the water depth (m) at previous step
@@ -207,9 +207,11 @@ def belanger(waterdepth=0, friction=chezy, **parameters):
     """
     #velocity = parameters['Q'] / float(waterdepth)
     velocity = parameters['Q'] / parameters['A']
-    return (parameters['g'] * parameters['ib'] + 
-            friction(waterdepth, velocity, **parameters)) / \
-           (parameters['g'] - velocity ** 2 / waterdepth)
+    ode1 = parameters['g'] * parameters['ib']
+    ode2 = friction(waterdepth, velocity, **parameters)
+    ode3 = parameters['g'] - velocity ** 2 / waterdepth
+    print ('1: {}, 2:{}, 3:{}, R:{}. d:{}, u:{}'.format(ode1, ode2, ode3, parameters['R'], waterdepth, velocity))
+    return (ode1 + ode2) / ode3
 
 def spatial_solver(ode, frictionformula=chezy, geometry=None, verbose=False):
     """
@@ -248,7 +250,7 @@ def spatial_solver(ode, frictionformula=chezy, geometry=None, verbose=False):
         
         # Calculate the value of the next point
         y += stepsize * ode(y, frictionformula, **parameters)
-
+        #print (stepsize * ode(y, frictionformula, **parameters))
         # Append the values to the output lists
         ylist.append(y)
         

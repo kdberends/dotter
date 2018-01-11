@@ -32,7 +32,7 @@ class Event:
 
 class Stream:
     """
-    Main 'model/geometry' class. Initials with a parameter dictionary
+    Main 'model/geometry' class. 
     """
     def __init__(self, **parameters):
         self.path = parameters['path']
@@ -130,6 +130,9 @@ class Stream:
         return A, P, R
 
     def get_parameters_at_index(self, index=0, waterdepth=0):
+        """
+        Updates the parameter dictionary
+        """
         (x, z, i, n, Q, width, theta) = self.get_data_at_index(index)
         (A, P, R) = self.hydraulic_parameters(width, theta, waterdepth)
         self.parameters['x'] = x

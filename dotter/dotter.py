@@ -38,7 +38,7 @@ def build_model_from_config(filename, verbose=True):
     stream.load_from_excel(files['geometry'])
 
     if verbose: sys.stdout.write('Loading lateral sources...\n')
-    stream.load_laterals(files['laterals'])
+    stream.load_laterals(files['laterals'])  
 
     if verbose: sys.stdout.write('Generating computational grid...\n')
     stream.generate_grid()  
