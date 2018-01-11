@@ -9,8 +9,7 @@ The dottertools are distributed as a Python package.
 Getting started
 ===========
 
-The 
-
+The easiest way to get started is to try out the interactive notebooks!
 
 
 Installation
