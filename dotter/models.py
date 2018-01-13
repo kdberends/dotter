@@ -8,7 +8,6 @@ Dottermodel main class
 
 from . import utils
 from . import containers
-
 import os
 from tqdm import tqdm
 import numpy as np
@@ -16,6 +15,7 @@ from configparser import ConfigParser
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+
 # =============================================================================
 # Classes
 # =============================================================================
@@ -68,6 +68,16 @@ class DotterModel:
         elif self.parameters.frictionmodel.lower() == 'vegetationgrowth':
             raise NotImplementedError
 
+        # Set outputpath
+        # ---------------------------------------------------------------------
+        path, file = os.path.split(configfilepath)
+        self.outputpath = os.path.join(path, 'output')
+        try:
+            os.mkdir(self.outputpath)
+        except FileExistsError:
+            pass
+
+        self.logger.info('set output path to: {}'.format(self.outputpath))
         self.logger.info('Initialised')
 
     def dash(self, dashtype=1, show=False):
@@ -85,7 +95,11 @@ class DotterModel:
         if timesteps == 'all':
             timesteps = self.grid.time
 
+        # Run solver
         self.__bacsfort(timesteps, progressbar=progressbar)
+
+        # Write output
+        self.__write_output()
 
     # =============================================================================
     # private methods
@@ -244,13 +258,9 @@ class DotterModel:
         parameters = utils.parse_dict({'parameters': config['parameters']}, 
                                       typedict=utils.configtypes)
 
-        boundaries = utils.parse_dict({'boundary': config['boundary']},
-                                      typedict=utils.boundarytypes)
-        # Parse constant friction (=friction everywhere the same)
         self.files = containers.FileContainer(**files)
         self.parameters = containers.ParameterContainer(**parameters['parameters'])
-        #self.boundaries = containers.BoundaryContainer(**boundaries['boundary'])
-
+  
     def __parsemeasurements(self):
         """
         parses the 'measurements' file and sets boundary conditions
@@ -261,10 +271,19 @@ class DotterModel:
             data = pd.read_csv(self.files.measurements, header=0,
                                                         parse_dates=[0],
                                                         date_parser=parser)
-            if os.path.isfile(self.files.laterals):
+            if (self.files.laterals is not None) and (os.path.isfile(self.files.laterals)):
                 laterals = pd.read_csv(self.files.laterals)
             
             self.grid.set_boundaries(data, laterals) 
 
         else:
             self.logger.error('Measurement file not found') 
+
+    def __writeoutput(self):
+        """
+        Export output to csv file
+        """
+        for variable, data in deltabeek.output._asdict().items():
+            with open(os.path.join(self.outputpath, '{}.csv'.format(variable))) as f:
+                pass
+        pass

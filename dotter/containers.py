@@ -33,6 +33,9 @@ ResultsContainer = namedtuple('Results', ['waterlevel', 'waterdepth', 'friction'
 
 BoundaryContainer = namedtuple('Boundary', ['type', 'q', 'h'])
 
+for container in [ParameterContainer, FileContainer, SamplesContainer, ResultsContainer]:
+    container.__new__.__defaults__ = (None,) * len(container._fields)
+
 class Event:
     """
     Container for data of events. 
@@ -77,7 +80,7 @@ class GeometryGrid:
         # Grid variables
         self.time = self.get_timevector()
         self.chainage = self.get_chainagevector()
-        self.h_resolution = 20
+        self.h_resolution = 50
         self.max_depth = 5
         self.X = None
         self.Y = None

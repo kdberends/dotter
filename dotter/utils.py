@@ -35,7 +35,6 @@ blockagemodel=str
 """
 
 boundarytypes = """[boundary]
-type=str
 q=float
 h=float
 """
