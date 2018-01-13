@@ -11,5 +11,5 @@ install:
 script:
   - pytest # or py.test for Python versions 3.5 and below
 
-  after_success:
+after_success:
   - coveralls
