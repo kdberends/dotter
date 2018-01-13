@@ -2,11 +2,11 @@
 Dotter
 ======
 
-|Build Status|
+|Build Status| |Coveralls|
 
-This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation. 
+This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation.
 
-The dottertools are distributed as a Python package. 
+The dottertools are distributed as a Python package.
 
 Getting started
 ===========
@@ -15,7 +15,7 @@ The easiest way to get started is to try out the interactive notebooks!
 
 To learn more about Dotter, see our `documentation <https://github.com/kdberends/dotter/wiki>`__
 
- 
+
 
 
 Installation
@@ -69,3 +69,6 @@ The dotter consortium:
 
 .. |Build Status| image:: https://api.travis-ci.org/kdberends/dotter.svg?branch=master
    :target: https://travis-ci.org/kdberends/dotter
+
+.. |Coveralls| image:: https://coveralls.io/repos/github/kdberends/dotter/badge.svg?branch=master
+ :target: https://coveralls.io/github/kdberends/dotter?branch=master
