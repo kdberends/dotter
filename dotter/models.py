@@ -25,7 +25,7 @@ class DotterModel:
     def __init__(self, configfilepath):
         self.logger = utils.get_logger()
         self.maxwidth = 20   # to generate trapezoidal bathy
-        
+
         self.dateformat = '%d/%m/%Y'
         self.frictionmodel = self.__manning
         self.load(configfilepath)
@@ -54,15 +54,15 @@ class DotterModel:
         self.output = containers.ResultsContainer(waterlevel=rmat.copy(),
                                                   waterdepth=rmat.copy(),
                                                   friction=rmat.copy())
-        
+
         # build friction matrix
         # ---------------------------------------------------------------------
         self.logger.info('Planting vegetation')
         if self.parameters.frictionmodel.lower() == 'stationary':
-            f = np.interp(self.grid.chainage, 
-                          self.grid.samples.X.T[0], 
+            f = np.interp(self.grid.chainage,
+                          self.grid.samples.X.T[0],
                           self.grid.samples.friction[0])
-            self.grid.friction = pd.DataFrame(index=self.grid.time, 
+            self.grid.friction = pd.DataFrame(index=self.grid.time,
                                               columns=self.grid.chainage,
                                               data=[f] * len(self.grid.time))
         elif self.parameters.frictionmodel.lower() == 'vegetationgrowth':
@@ -99,7 +99,7 @@ class DotterModel:
         self.__bacsfort(timesteps, progressbar=progressbar)
 
         # Write output
-        self.__write_output()
+        #self.__write_output()
 
     # =============================================================================
     # private methods
@@ -114,7 +114,7 @@ class DotterModel:
         axs.append(fig.add_subplot(211))
         axs.append(fig.add_subplot(223))
         axs.append(fig.add_subplot(224))
-        
+
         axs[0].pcolormesh(self.grid.chainage, self.grid.time, self.output.waterdepth)
         myFmt = mdates.DateFormatter('%m')
         axs[0].yaxis.set_major_formatter(myFmt)
@@ -143,10 +143,10 @@ class DotterModel:
         axs.append(fig.add_subplot(211))
         axs.append(fig.add_subplot(223))
         axs.append(fig.add_subplot(224))
-        axs[0].pcolormesh(self.grid.X, 
-                        self.grid.Y, 
+        axs[0].pcolormesh(self.grid.X,
+                        self.grid.Y,
                         self.grid.Z)
-                       
+
         axs[0].set_title('bathymetry')
 
         for ax in axs:
@@ -168,7 +168,7 @@ class DotterModel:
             iterator = enumerate(tqdm(timesteps))
         else:
             iterator = enumerate(timesteps)
-            
+
         for i, t in iterator:
             self.__bacs(t)
 
@@ -176,11 +176,11 @@ class DotterModel:
         """
         Euler algorithm, backward in space
         """
-        
+
         h = self.grid.downstream[time]
         d = h - self.grid.bedlevel[-1]
         waterlevels = [h]
-        
+
         for i in list(reversed(range(len(self.grid.chainage))))[:-1]:
             Q = self.grid.discharge[self.grid.chainage[i]][time]
             depth = h - self.grid.bedlevel[i]
@@ -192,11 +192,11 @@ class DotterModel:
             d += -self.grid.dx * dhdx
             h = d + self.grid.bedlevel[i - 1]
             waterlevels.append(h)
-            
+
         self.output.waterlevel.loc[time] = list(reversed(waterlevels))
         self.output.waterdepth.loc[time] = list(reversed(waterlevels)) - self.grid.bedlevel
         return waterlevels
-            
+
     def __belanger(self, slope, u, n, R, depth):
         ode1 = self.parameters.g * slope
         ode2 = self.frictionmodel(u, n, R)
@@ -255,12 +255,12 @@ class DotterModel:
         for key in config['files']:
             files[key] = os.path.join(pathname, config['files'][key])
 
-        parameters = utils.parse_dict({'parameters': config['parameters']}, 
+        parameters = utils.parse_dict({'parameters': config['parameters']},
                                       typedict=utils.configtypes)
 
         self.files = containers.FileContainer(**files)
         self.parameters = containers.ParameterContainer(**parameters['parameters'])
-  
+
     def __parsemeasurements(self):
         """
         parses the 'measurements' file and sets boundary conditions
@@ -273,11 +273,11 @@ class DotterModel:
                                                         date_parser=parser)
             if (self.files.laterals is not None) and (os.path.isfile(self.files.laterals)):
                 laterals = pd.read_csv(self.files.laterals)
-            
-            self.grid.set_boundaries(data, laterals) 
+
+            self.grid.set_boundaries(data, laterals)
 
         else:
-            self.logger.error('Measurement file not found') 
+            self.logger.error('Measurement file not found')
 
     def __writeoutput(self):
         """
