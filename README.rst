@@ -2,6 +2,8 @@
 Dotter
 ======
 
+|Build Status| |Coverage| |NumFOCUS_badge| |Binder|
+
 This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation. 
 
 The dottertools are distributed as a Python package. 
