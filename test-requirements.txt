@@ -8,3 +8,5 @@ ipywidgets
 nbformat>=4.2
 tqdm
 sphinx
+pytest
+pytest-cov
