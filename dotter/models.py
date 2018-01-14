@@ -23,7 +23,9 @@ import matplotlib.dates as mdates
 class DotterModel:
 
     def __init__(self, configfilepath):
-        self.logger = utils.get_logger()
+
+        self.__set_outputpath_from_config(configfilepath)
+        self.logger = utils.get_logger(self.outputpath, overwrite=True)
         self.maxwidth = 20   # to generate trapezoidal bathy
 
         self.dateformat = '%d/%m/%Y'
@@ -68,15 +70,6 @@ class DotterModel:
         elif self.parameters.frictionmodel.lower() == 'vegetationgrowth':
             raise NotImplementedError
 
-        # Set outputpath
-        # ---------------------------------------------------------------------
-        path, file = os.path.split(configfilepath)
-        self.outputpath = os.path.join(path, 'output')
-        try:
-            os.mkdir(self.outputpath)
-        except FileExistsError:
-            pass
-
         self.logger.info('set output path to: {}'.format(self.outputpath))
         self.logger.info('Initialised')
 
@@ -99,11 +92,20 @@ class DotterModel:
         self.__bacsfort(timesteps, progressbar=progressbar)
 
         # Write output
-        #self.__write_output()
+        self.__write_output()
 
     # =============================================================================
     # private methods
     # =============================================================================
+    def __set_outputpath_from_config(self, configfilepath):
+        # Set outputpath
+        # ---------------------------------------------------------------------
+        path, file = os.path.split(configfilepath)
+        self.outputpath = os.path.join(path, 'output')
+        try:
+            os.mkdir(self.outputpath)
+        except FileExistsError:
+            pass
 
     def __dash_output(self, show=False):
         """
@@ -279,11 +281,11 @@ class DotterModel:
         else:
             self.logger.error('Measurement file not found')
 
-    def __writeoutput(self):
+    def __write_output(self):
         """
         Export output to csv file
         """
-        for variable, data in deltabeek.output._asdict().items():
-            with open(os.path.join(self.outputpath, '{}.csv'.format(variable))) as f:
-                pass
-        pass
+        for variable, data in self.output._asdict().items():
+            fpath = os.path.join(self.outputpath, '{}.csv'.format(variable))
+            data.to_csv(fpath)
+            self.logger.info('Written {} to {}'.format(variable, fpath))
