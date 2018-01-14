@@ -32,8 +32,8 @@ def test_backwater():
     assert(np.abs(3.50 - A * C * np.sqrt(R * i)) < 0.001)
 
     deltabeek.run(timesteps=[deltabeek.grid.time[0]])
-
     error = np.abs(deltabeek.output.waterdepth[0][0] - depth)
+
     assert (error < 0.001)
 
 test_backwater()
