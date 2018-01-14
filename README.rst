@@ -1,12 +1,9 @@
 ======
 Dotter
 ======
-
 |Build|
 |Cover|
 |Lic|
-
-
 
 This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation.
 
@@ -70,11 +67,11 @@ The dotter consortium:
     :alt: deltares logo
     :align: left
 
-.. |Build| .. image:: https://img.shields.io/travis/kdberends/dotter.svg?style=flat-square
-    :target: https://travis-ci.org/kdberends/dotter
+.. |Cover| image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
+   :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
 
-.. |Cover| image:: .. image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
-    :target: https://coveralls.io/github/kdberends/dotter?branch=master
+.. |Build| image:: https://img.shields.io/travis/kdberends/dotter.svg
+    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
 
 .. |Lic| image:: https://img.shields.io/github/license/kdberends/dotter.svg
    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
