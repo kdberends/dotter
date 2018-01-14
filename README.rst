@@ -68,12 +68,14 @@ The dotter consortium:
     :alt: deltares logo
     :align: left
 
+.. image:: https://img.shields.io/travis/kdberends/dotter.svg?style=flat-square
+    :target: https://travis-ci.org/kdberends/dotter
 
 .. |Build Status| .. image:: https://img.shields.io/travis/kdberends/dotter.svg?style=flat-square
-   :target: https://travis-ci.org/kdberends/dotter
+    :target: https://travis-ci.org/kdberends/dotter
 
 .. |Coveralls| image:: .. image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
-   :target: https://coveralls.io/github/kdberends/dotter?branch=master
+    :target: https://coveralls.io/github/kdberends/dotter?branch=master
 
-.. |License| .. image:: https://img.shields.io/github/license/kdberends/dotter.svg   \
+.. image:: https://img.shields.io/github/license/kdberends/dotter.svg   \
    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
