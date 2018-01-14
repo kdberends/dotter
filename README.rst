@@ -2,8 +2,8 @@
 Dotter
 ======
 
-|Build Status| |Coverage|
-
+|Build|
+|Cover|
 |Lic|
 
 
@@ -70,11 +70,10 @@ The dotter consortium:
     :alt: deltares logo
     :align: left
 
-
-.. |Build Status| .. image:: https://img.shields.io/travis/kdberends/dotter.svg?style=flat-square
+.. |Build| .. image:: https://img.shields.io/travis/kdberends/dotter.svg?style=flat-square
     :target: https://travis-ci.org/kdberends/dotter
 
-.. |Coveralls| image:: .. image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
+.. |Cover| image:: .. image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
     :target: https://coveralls.io/github/kdberends/dotter?branch=master
 
 .. |Lic| image:: https://img.shields.io/github/license/kdberends/dotter.svg
