@@ -68,10 +68,10 @@ The dotter consortium:
     :align: left
 
 .. |Cover| image:: https://img.shields.io/coveralls/github/kdberends/dotter.svg
-   :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
+   :target: https://coveralls.io/github/kdberends/dotter?branch=master
 
 .. |Build| image:: https://img.shields.io/travis/kdberends/dotter.svg
-    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
+    :target: https://travis-ci.org/kdberends/dotter
 
 .. |Lic| image:: https://img.shields.io/github/license/kdberends/dotter.svg
    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
