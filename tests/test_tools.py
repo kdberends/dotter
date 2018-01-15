@@ -4,6 +4,10 @@
 # =============================================================================
 # Imports & Function definitions
 # =============================================================================
+import matplotlib as mpl
+if os.environ.get('DISPLAY','') == '':
+    print('no display found. Using non-interactive Agg backend')
+    mpl.use('Agg')
 from dotter.models import DotterModel
 from dotter import tools
 
