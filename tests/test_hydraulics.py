@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 # Parameters
 # =============================================================================
 
+def test_vegetation():
+    """
+    testcase with vegetation growth
+    """
+    deltabeek = DotterModel('tests/testcases/vegetation/config.ini')
+    deltabeek.run()
 
 def test_backwater():
     """
@@ -35,5 +41,3 @@ def test_backwater():
     error = np.abs(deltabeek.output.waterdepth[0][0] - depth)
 
     assert (error < 0.001)
-
-test_backwater()

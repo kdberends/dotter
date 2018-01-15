@@ -5,7 +5,7 @@ Custom container classes to store data
 # =============================================================================
 # Imports
 # =============================================================================
-
+from configparser import ConfigParser
 from datetime import datetime, timedelta
 from collections import namedtuple
 import pandas as pd
@@ -29,12 +29,18 @@ FileContainer = namedtuple('Files', ['geometry', 'vegetation',
 SamplesContainer = namedtuple('Samples', ['X', 'Y', 'Z',
                                           'friction'])
 
-ResultsContainer = namedtuple('Results', ['waterlevel', 'waterdepth', 'friction'])
+ResultsContainer = namedtuple('Results', ['waterlevel', 'waterdepth', 'friction', 'blockage'])
 
 BoundaryContainer = namedtuple('Boundary', ['type', 'q', 'h'])
 
+VegetationContainer = namedtuple('VegetationContainer', ['name', 'tstart', 'tstop',
+                                                         'growthspeed', 'decayspeed',
+                                                         'maximumcover', 'density',
+                                                         'stemheight', 'stemdiameter'])
+
 for container in [ParameterContainer, FileContainer, SamplesContainer, ResultsContainer]:
     container.__new__.__defaults__ = (None,) * len(container._fields)
+
 
 class Event:
     """
@@ -47,6 +53,8 @@ class Event:
         self.max = float(eventdict['range_max'])
         self.time = datetime.strptime(eventdict['time'], '%d/%m/%Y')
         self.triggered = False
+
+
 
 class GeometryGrid:
     """
@@ -93,7 +101,9 @@ class GeometryGrid:
         self.Z = griddata(np.array([self.samples.X.flatten(), self.samples.Y.flatten()]).T,
                           self.samples.Z.flatten(), (self.X, self.Y), method='linear')
 
+
         # one-dimensional (time invariant)
+        self.vegetation = None
         self.bedlevel = self.Z.min(axis=0)
         self.bedslope = np.abs(np.diff(self.bedlevel) / np.diff(self.chainage))
         self.bedslope = np.round(np.append([self.bedslope[0]], self.bedslope), decimals=10)

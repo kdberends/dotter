@@ -8,7 +8,7 @@ Dottermodel tools
 from copy import copy
 from . import utils
 from scipy import optimize
-import numpy as np 
+import numpy as np
 from tqdm import tqdm
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
@@ -20,18 +20,18 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
     """
     predictive use (at different Q)
     """
-    
+
     # generate QH
     # -------------------------------------------------------------------------
     discharge_restore = copy(model.grid.discharge)
     friction_restore = copy(model.grid.friction)
 
     model.logger.info('Generating QH for normative friction')
-    QHdischarges = np.linspace(model.grid.discharge.min().min(), 
+    QHdischarges = np.linspace(model.grid.discharge.min().min(),
                                np.max([model.grid.discharge.max().max(),
                                        np.max(discharges)]),
                                20)
-    
+
     model.grid.friction[:] = normative_friction
     upstream = list()
     for discharge in tqdm(QHdischarges):
@@ -78,23 +78,23 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
     measured_slope = model.grid.upstream - model.grid.downstream
     normative_slope = np.array(qh(model.grid.discharge.iloc[:, 0].values) - model.grid.downstream)
     relative_slope = measured_slope / normative_slope
-    
+
     relscenslopes = []
     for i, discharge in enumerate(discharges):
         relscenslopes.append((discharge_levels[i] - model.grid.downstream) / normative_slope)
     relscenslopes = np.array(relscenslopes)
-    
+
     # Plot gradient
     minslope = np.min([np.min(relative_slope), relscenslopes.min().min()])
     maxslope = np.max([np.max(relative_slope), relscenslopes.max().max()])
     slope_factors = np.linspace(minslope, maxslope, 25)
-    
+
     vs = np.interp(slope_factors, [minslope, 0, maxslope], [+1, 0, -1])
     vs_matrix = np.array([vs] * 2)
-    
+
     # Plot ever
     # ------------------------------------------------------------------------
-    axs[1].pcolormesh([model.grid.time[0], model.grid.time[-1]], 
+    axs[1].pcolormesh([model.grid.time[0], model.grid.time[-1]],
                       slope_factors, vs_matrix.T, cmap="RdYlGn")
 
     axs[0].plot(model.grid.time, modelled - model.grid.downstream, '.g')
@@ -108,7 +108,7 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
     for relscenslope in relscenslopes:
         axs[1].plot(model.grid.time, relscenslope, '--k', linewidth=0.5)
         axs[1].text(model.grid.time[-1], relscenslope[-1], 'Q={} $m^3/s$'.format(discharge))
-    
+
     axs[1].plot(model.grid.time, relative_slope, '.-k', label='measurements')
     axs[1].legend()
     axs[1].set_ylabel('$\Delta H / \Delta H_n$')
@@ -117,6 +117,8 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
         utils.two_axes_style(ax)
     if show:
         plt.show()
+
+    return True
 
 def estimate_roughness(model, every=1):
     """
@@ -143,19 +145,19 @@ def blockage_analysis(model):
     """
 
     """
-    
+
     fig, axs = plt.subplots(2, 2, figsize=(10, 6))
     axs = axs.flatten()
     phi = np.linspace(0, 0.9, 100)
     axs[0].plot(model.grid.time, model.grid.friction.iloc[:, 0])
 
-    
+
     axs[1].plot(phi * 100, __pglinear(phi), '--k', label='pglinear (1991)')
     axs[1].plot(phi * 100, __green(phi), '-k', label='Green (2005)')
     axs[1].plot(phi * 100, __linneman(phi), '-.k', label='Linneman (2017)')
     axs[1].plot([10, 23], [0.03, 0.18], 'dr', label='Linneman (2017)')
     axs[1].legend(loc=2)
-    
+
     model_n = model.grid.friction.iloc[:, 0].values
     axs[3].plot(model.grid.time, __linneman(model_n, reverse=True) * 100, '-', label='linneman')
     axs[3].plot(model.grid.time, __green(model_n, reverse=True) * 100, '-', label='green')
@@ -168,7 +170,7 @@ def blockage_analysis(model):
     axs[1].set_ylabel('Manning coefficient ($sm^{1/3}$)')
     axs[0].set_ylabel('Manning coefficient ($sm^{1/3}$)')
     axs[0].set_ylim(axs[1].get_ylim())
-    
+
     for ax in axs:
         utils.two_axes_style(ax)
     axs[2].set_axis_off()
@@ -177,19 +179,19 @@ def blockage_analysis(model):
 def __linneman(data, reverse=False):
     if reverse:
         return (data - 0.033) / 0.312
-    else: 
+    else:
         return 0.312 * data + 0.033
 
 def __green(data, reverse=False):
     if reverse:
         return np.log(data / 0.0438) / 2.
-    else: 
+    else:
         return 0.0438 * np.exp(2 * data)
 
 def __pglinear(data, reverse=False):
     if reverse:
         return 1 - 0.033 / data
-    else: 
+    else:
         return 0.033 * (1 - data)**-1
 # =============================================================================
 # Helper functions

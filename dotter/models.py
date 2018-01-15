@@ -15,8 +15,8 @@ from configparser import ConfigParser
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-
-# =============================================================================
+from datetime import timedelta
+# ===================atom-minimap==========================================================
 # Classes
 # =============================================================================
 
@@ -27,7 +27,8 @@ class DotterModel:
         self.__set_outputpath_from_config(configfilepath)
         self.logger = utils.get_logger(self.outputpath, overwrite=True)
         self.maxwidth = 20   # to generate trapezoidal bathy
-
+        self.vegetationdefs = list()
+        self.blockagemodel = self.pglinear
         self.dateformat = '%d/%m/%Y'
         self.frictionmodel = self.__manning
         self.load(configfilepath)
@@ -44,31 +45,24 @@ class DotterModel:
         self.logger.info('Loading geometry from {}'.format(self.files.geometry))
         self.__parsegeometry()
 
-        # initialise boundary conditions
-        # ---------------------------------------------------------------------
-        self.logger.info('Loading boundary conditions')
-        #self.boundaryconditions = containers.BoundaryConditions(self.files)
-        self.__parsemeasurements()
-
         # initialize results
         # ---------------------------------------------------------------------
         rmat = pd.DataFrame(index=self.grid.time, columns=self.grid.chainage, dtype='float')
         self.output = containers.ResultsContainer(waterlevel=rmat.copy(),
                                                   waterdepth=rmat.copy(),
-                                                  friction=rmat.copy())
+                                                  friction=rmat.copy(),
+                                                  blockage=rmat.copy())
+        # initialise boundary conditions
+        # ---------------------------------------------------------------------
+        self.logger.info('Loading boundary conditions')
+        self.__parsemeasurements()
+
 
         # build friction matrix
         # ---------------------------------------------------------------------
         self.logger.info('Planting vegetation')
-        if self.parameters.frictionmodel.lower() == 'stationary':
-            f = np.interp(self.grid.chainage,
-                          self.grid.samples.X.T[0],
-                          self.grid.samples.friction[0])
-            self.grid.friction = pd.DataFrame(index=self.grid.time,
-                                              columns=self.grid.chainage,
-                                              data=[f] * len(self.grid.time))
-        elif self.parameters.frictionmodel.lower() == 'vegetationgrowth':
-            raise NotImplementedError
+        self.__parse_vegetation()
+        self.__build_friction()
 
         self.logger.info('set output path to: {}'.format(self.outputpath))
         self.logger.info('Initialised')
@@ -97,6 +91,80 @@ class DotterModel:
     # =============================================================================
     # private methods
     # =============================================================================
+    def __parse_vegetation(self):
+        config = ConfigParser()
+        config.read(self.files.vegetation)
+        vegetationumbers = []
+        for name in config:
+            try:
+                vegetationumbers.append(int(name))
+            except ValueError:
+                pass
+        self.logger.debug('Found vegetation numbers: {}'.format(vegetationumbers))
+        self.vegetationdefs = list(range(np.max(vegetationumbers)))
+
+        for name in config:
+            try:
+                int(name)
+                d = config[name]
+                self.vegetationdefs[int(name) - 1] = containers.VegetationContainer(name=d['name'],
+                                                                          tstart=float(d['tstart']),
+                                                                          tstop=float(d['tstop']),
+                                                                          growthspeed=float(d['growthspeed']),
+                                                                          decayspeed=float(d['decayspeed']),
+                                                                          maximumcover=float(d['maximumcover']),
+                                                                          density=float(d['density']),
+                                                                          stemheight=float(d['stemheight']),
+                                                                          stemdiameter=float(d['stemdiameter']))
+            except ValueError:
+                pass
+
+    def __build_friction(self):
+        """
+        constructs the friction matrix
+
+        todo: make friction a function, not a value, for compatibility with 2d
+        friction uav maps
+        """
+        if self.parameters.frictionmodel.lower() == 'stationary':
+            f = np.interp(self.grid.chainage,
+                          self.grid.samples.X.T[0],
+                          self.grid.samples.friction[0])
+            self.grid.friction = pd.DataFrame(index=self.grid.time,
+                                              columns=self.grid.chainage,
+                                              data=[f] * len(self.grid.time))
+
+        elif self.parameters.frictionmodel.lower() == 'vegetationgrowth':
+            self.grid.vegetationdef = np.round(np.interp(self.grid.chainage,
+                                                self.grid.samples.X.T[0],
+                                                self.grid.samples.friction[1]))
+            initial_blockage = np.interp(self.grid.chainage,
+                                         self.grid.samples.X.T[0],
+                                         self.grid.samples.friction[0])
+            # Initial blockage
+            self.output.blockage.iloc[0] = initial_blockage
+
+            # Solve
+            for ix, x in enumerate(self.grid.chainage):
+                vdef = self.vegetationdefs[int(self.grid.vegetationdef[ix]) - 1]
+                tstart = self.parameters.tstart + timedelta(days=vdef.tstart)
+                tstop = self.parameters.tstart + timedelta(days=vdef.tstop)
+                N0 = self.output.blockage.iloc[0][x] - 1e-2
+                r = vdef.growthspeed
+                rd = vdef.decayspeed
+                dt = self.parameters.dt
+                K = vdef.maximumcover
+                for it, t in enumerate(self.grid.time[1:]):
+                    N = self.output.blockage.iloc[it][x]
+                    self.output.blockage.loc[t][x] = N
+                    if (t > tstart) and (t <= tstop):
+                        self.output.blockage.loc[t][x] = N + dt * r * (N - N0) * (1 - N / K)
+                    elif t > tstop:
+                        self.output.blockage.loc[t][x] = N + dt * rd * (N - N0) * (1 - N / K)
+
+            self.grid.friction = self.blockagemodel(self.output.blockage)
+
+
     def __set_outputpath_from_config(self, configfilepath):
         # Set outputpath
         # ---------------------------------------------------------------------
@@ -289,3 +357,7 @@ class DotterModel:
             fpath = os.path.join(self.outputpath, '{}.csv'.format(variable))
             data.to_csv(fpath)
             self.logger.info('Written {} to {}'.format(variable, fpath))
+
+    @staticmethod
+    def pglinear(blockage):
+        return 0.0333 / (1 - blockage)

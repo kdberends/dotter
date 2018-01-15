@@ -13,7 +13,7 @@ __pycache__/*
 */.ipynb_checkpoints/*
 
 # output files
-*/output/*
+*/output
 
 # Project files
 .ropeproject

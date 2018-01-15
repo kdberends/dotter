@@ -34,11 +34,6 @@ growthmodel=str
 blockagemodel=str
 """
 
-boundarytypes = """[boundary]
-q=float
-h=float
-"""
-
 datetimeformat = '%d/%m/%Y'
 # =============================================================================
 # Definitions
@@ -67,15 +62,15 @@ def parse_dict(input_dict, typedict=configtypes):
             else:
                 P[section][key] = input_dict[section][key]
 
-    return P 
+    return P
 
 def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
     """
     Returns a logger object which:
-    - 
+    -
     """
     filepath = os.path.join(outputpath, logfile)
-    if overwrite and os.path.isfile(filepath): 
+    if overwrite and os.path.isfile(filepath):
         mode = 'w'
     else:
         mode = 'a'
@@ -93,9 +88,9 @@ def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
         streamhandler.setLevel(logging.DEBUG)
 
         # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s', 
+        formatter = logging.Formatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s',
                                       "%Y-%m-%d %H:%M:%S")
-        
+
         filehandler.setFormatter(formatter)
         streamhandler.setFormatter(formatter)
 
@@ -110,8 +105,8 @@ def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
 def set_plotstyle(style='', palette=flatui_r, scale=1.2):
     """
     Arguments:
-    
-    style: 
+
+    style:
           'paper': for use in journal
           'digital': for use on-screen
 
@@ -123,7 +118,7 @@ def set_plotstyle(style='', palette=flatui_r, scale=1.2):
     """
     sns.set_context("paper")
 
-    if style.lower() == 'paper':    
+    if style.lower() == 'paper':
         # Set the font to be serif, rather than sans
         sns.set(font='serif',
                 palette=palette,
