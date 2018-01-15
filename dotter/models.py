@@ -63,8 +63,9 @@ class DotterModel:
 
         # build friction matrix
         # ---------------------------------------------------------------------
-        self.logger.info('Planting vegetation')
-        self.__parse_vegetation()
+        self.logger.info('Building friction matrix')
+        if self.parameters.frictionmodel == 'vegetationgrowth':
+            self.__parse_vegetation()
         self.__build_friction()
 
         self.logger.info('set output path to: {}'.format(self.outputpath))
@@ -187,42 +188,7 @@ class DotterModel:
                         # Remove events
                         # TODO: make eventclass with mutable flag
                         self.events.pop(ie)
-            """
-            for ix, x in enumerate(self.grid.chainage):
-05
-                vdef = self.vegetationdefs[int(self.grid.vegetationdef[ix]) - 1]
-                tstart = self.parameters.tstart + timedelta(days=vdef.tstart)
-                tstop = self.parameters.tstart + timedelta(days=vdef.tstop)
-                N0 = self.output.blockage.iloc[0, ix] - 1e-2
-                (r, rd, K) = (vdef.growthspeed, vdef.decayspeed, vdef.maximumcover)
-                dt = self.parameters.dt
 
-                for it, t in enumerate(self.grid.time[1:]):
-                    N = self.output.blockage.iloc[it, ix]
-                    self.output.blockage.loc[t, x] = N
-
-                    # growth model
-                    # --------------------------------------------------------=
-                    if (t > tstart) and (t <= tstop):
-                        self.output.blockage.loc[t, x] = N + dt * r * (N - N0) * (1 - N / K)
-                    elif t > tstop:
-                        self.output.blockage.loc[t, x] = N + dt * rd * (N - N0) * (1 - N / K)
-
-                    # Check for events
-                    # --------------------------------------------------------=
-                    for ie, event in enumerate(self.events):
-                        if not(event.triggered) and (t > event.tstart):
-                            self.logger.info('Triggered event {} on {}'.format(event, t))
-                            chainagemask = (self.grid.chainage > event.minchainage) &\
-                                           (self.grid.chainage < event.maxchainage)
-                            #self.logger.debug(self.grid.chainagemask)
-                            self.output.blockage.loc[t, self.grid.chainage[chainagemask]] = event.reduce_to
-                            # Remove events
-                            # TODO: make eventclass with mutable flag
-                            self.events.pop(ie)
-            self.logger.debug('output block shape {}'.format(self.output.blockage.shape))
-
-            """
             self.grid.friction = self.blockagemodel(self.output.blockage)
     def __set_outputpath_from_config(self, configfilepath):
         # Set outputpath
@@ -353,13 +319,14 @@ class DotterModel:
         """
 
         geom = pd.read_excel(self.files.geometry)
-
+        self.maxwidth = 20#np.max(geom['W']) * 4
+        self.y_resolution = 20
         X = list()
         Y = list()
         Z = list()
         for i in geom.index:
             ygpoints = np.array([-self.maxwidth / 2, 0 - geom['W'][i] / 2, 0 + geom['W'][i] / 2, self.maxwidth / 2])
-            ypoints = np.append(ygpoints, np.linspace(-self.maxwidth / 2, self.maxwidth / 2, 20))
+            ypoints = np.append(ygpoints[1:3], np.linspace(-self.maxwidth / 2, self.maxwidth / 2, self.y_resolution))
             ypoints = np.sort(ypoints, axis=0)
             Y.append(ypoints)
 

@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 # Parameters
 # =============================================================================
 
-def test_trapezoidal_profile():
+def test_trapezoidal_profile(local_run=False):
     """
     test whether the numerical approximation of a trapezoidal profile is
     good compared to analytical results of wet area and hydraulic radius
     """
-
-    deltabeek = DotterModel('tests/testcases/trapezoidal/config.ini')
+    if local_run:
+        deltabeek = DotterModel('testcases/trapezoidal/config.ini')
+    else:
+        deltabeek = DotterModel('tests/testcases/trapezoidal/config.ini')
 
     # The accuracy of the numerical resolution depends on the h_resolution
     deltabeek.grid.h_resolution = 100
@@ -29,6 +31,12 @@ def test_trapezoidal_profile():
     P_anal = 3 + 2 * waterlevels / np.sin(30 * np.pi / 180.)
     R_anal = A_anal / P_anal
 
+    if local_run:
+        fig, ax = plt.subplots(2)
+        ax[0].plot(waterlevels, deltabeek.grid.wet_area[-1](waterlevels), '.-', label='dotter')
+        ax[0].plot(waterlevels, A_anal, '.-', label='analytical')
+        ax[0].legend()
+        plt.show()
     error = deltabeek.grid.wet_area[-1](waterlevels) - A_anal
     assert (np.max(np.abs(error)) < 0.002)
 
