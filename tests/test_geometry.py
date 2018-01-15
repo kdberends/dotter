@@ -5,7 +5,7 @@
 # Imports & Function definitions
 # =============================================================================
 from dotter.models import DotterModel
-import numpy as np 
+import numpy as np
 import matplotlib.pyplot as plt
 # =============================================================================
 # Parameters
@@ -18,7 +18,7 @@ def test_trapezoidal_profile():
     """
 
     deltabeek = DotterModel('tests/testcases/trapezoidal/config.ini')
-    
+
     # The accuracy of the numerical resolution depends on the h_resolution
     deltabeek.grid.h_resolution = 100
     deltabeek.grid.generate_grid()
@@ -31,7 +31,6 @@ def test_trapezoidal_profile():
 
     error = deltabeek.grid.wet_area[-1](waterlevels) - A_anal
     assert (np.max(np.abs(error)) < 0.002)
-    
+
     error = deltabeek.grid.hydraulic_radius[-1](waterlevels) - R_anal
     assert (np.max(np.abs(error)) < 0.0005)
-    

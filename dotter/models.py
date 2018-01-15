@@ -97,14 +97,15 @@ class DotterModel:
     def __parse_vegetation(self):
         config = ConfigParser()
         config.read(self.files.vegetation)
-        vegetationumbers = []
+        vegetationnumbers = []
         for name in config:
             try:
-                vegetationumbers.append(int(name))
+                vegetationnumbers.append(int(name))
             except ValueError:
                 pass
-        self.logger.debug('Found vegetation numbers: {}'.format(vegetationumbers))
-        self.vegetationdefs = list(range(np.max(vegetationumbers)))
+        if vegetationnumbers:
+            self.logger.debug('Found vegetation numbers: {}'.format(vegetationnumbers))
+            self.vegetationdefs = list(range(np.max(vegetationnumbers)))
 
         for name in config:
             try:
