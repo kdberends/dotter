@@ -19,6 +19,12 @@ import matplotlib.pyplot as plt
 
 deltabeek = DotterModel('cases/vegetation/config.ini')
 
-deltabeek.run()
 
-deltabeek.dash(dashtype=2, show=True)
+fig, ax = plt.subplots(1)
+#ax.plot(deltabeek.output.blockage.iloc[:, 0])
+#ax.pcolor(deltabeek.grid.friction)
+ax.pcolor(deltabeek.grid.time, deltabeek.grid.chainage, deltabeek.output.blockage.T)
+plt.show()
+
+#deltabeek.run()
+#deltabeek.dash(dashtype=2, show=True)

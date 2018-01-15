@@ -52,11 +52,14 @@ class DotterModel:
                                                   waterdepth=rmat.copy(),
                                                   friction=rmat.copy(),
                                                   blockage=rmat.copy())
+
         # initialise boundary conditions
         # ---------------------------------------------------------------------
         self.logger.info('Loading boundary conditions')
         self.__parsemeasurements()
 
+        # load events
+        self.__parseevents()
 
         # build friction matrix
         # ---------------------------------------------------------------------
@@ -138,33 +141,88 @@ class DotterModel:
             self.grid.vegetationdef = np.round(np.interp(self.grid.chainage,
                                                 self.grid.samples.X.T[0],
                                                 self.grid.samples.friction[1]))
+
             initial_blockage = np.interp(self.grid.chainage,
                                          self.grid.samples.X.T[0],
                                          self.grid.samples.friction[0])
-            # Initial blockage
-            self.output.blockage.iloc[0] = initial_blockage
+            # SET INITIAL
+            self.output.blockage[:] = np.tile(initial_blockage, (183, 1))
 
             # Solve
+
+            tstart = [self.parameters.tstart + timedelta(days=self.vegetationdefs[int(vdef) - 1].tstart) for vdef in self.grid.vegetationdef]
+            tstop = [self.parameters.tstart + timedelta(days=self.vegetationdefs[int(vdef) - 1].tstop) for vdef in self.grid.vegetationdef]
+            growthspeed = np.array([self.vegetationdefs[int(vdef) - 1].growthspeed for vdef in self.grid.vegetationdef])
+            decayspeed = np.array([self.vegetationdefs[int(vdef) - 1].decayspeed for vdef in self.grid.vegetationdef])
+            maximumcover = np.array([self.vegetationdefs[int(vdef) - 1].maximumcover for vdef in self.grid.vegetationdef])
+            dt = self.parameters.dt
+
+            #r = pd.DataFrame(index=self.grid.time, columns=self.grid.chainage, data=0)
+
+            for it, t in enumerate(self.grid.time[1:]):
+                tmask = np.where((np.array(tstart) < t) & (np.array(tstop) >= t))
+                dmask = np.where((np.array(tstart) < t) & (np.array(tstop) < t))
+
+                # Growth cycle
+                # --------------------------------------------------------------
+                for mask, speed  in zip([tmask, dmask], [growthspeed, decayspeed]):
+                    mask = mask[0]
+                    N = self.output.blockage.iloc[it, mask]
+                    N0 = initial_blockage[mask] - 1e-3
+                    K = maximumcover[mask]
+                    r = speed[mask]
+                    #self.output.blockage.iloc[it + 1, mask] = r
+                    self.output.blockage.iloc[it + 1, mask] = N + dt * r * (N - N0) * (1 - N / K)
+
+                # Events
+                # --------------------------------------------------------------
+                for ie, event in enumerate(self.events):
+                    if not(event.triggered) and (t > event.tstart):
+                        self.logger.info('Triggered event {} on {}'.format(event, t))
+                        chainagemask = (self.grid.chainage > event.minchainage) &\
+                                       (self.grid.chainage < event.maxchainage)
+                        #self.logger.debug(self.grid.chainagemask)
+                        self.output.blockage.loc[t, self.grid.chainage[chainagemask]] = event.reduce_to
+                        # Remove events
+                        # TODO: make eventclass with mutable flag
+                        self.events.pop(ie)
+            """
             for ix, x in enumerate(self.grid.chainage):
+05
                 vdef = self.vegetationdefs[int(self.grid.vegetationdef[ix]) - 1]
                 tstart = self.parameters.tstart + timedelta(days=vdef.tstart)
                 tstop = self.parameters.tstart + timedelta(days=vdef.tstop)
-                N0 = self.output.blockage.iloc[0][x] - 1e-2
-                r = vdef.growthspeed
-                rd = vdef.decayspeed
+                N0 = self.output.blockage.iloc[0, ix] - 1e-2
+                (r, rd, K) = (vdef.growthspeed, vdef.decayspeed, vdef.maximumcover)
                 dt = self.parameters.dt
-                K = vdef.maximumcover
+
                 for it, t in enumerate(self.grid.time[1:]):
-                    N = self.output.blockage.iloc[it][x]
-                    self.output.blockage.loc[t][x] = N
+                    N = self.output.blockage.iloc[it, ix]
+                    self.output.blockage.loc[t, x] = N
+
+                    # growth model
+                    # --------------------------------------------------------=
                     if (t > tstart) and (t <= tstop):
-                        self.output.blockage.loc[t][x] = N + dt * r * (N - N0) * (1 - N / K)
+                        self.output.blockage.loc[t, x] = N + dt * r * (N - N0) * (1 - N / K)
                     elif t > tstop:
-                        self.output.blockage.loc[t][x] = N + dt * rd * (N - N0) * (1 - N / K)
+                        self.output.blockage.loc[t, x] = N + dt * rd * (N - N0) * (1 - N / K)
 
+                    # Check for events
+                    # --------------------------------------------------------=
+                    for ie, event in enumerate(self.events):
+                        if not(event.triggered) and (t > event.tstart):
+                            self.logger.info('Triggered event {} on {}'.format(event, t))
+                            chainagemask = (self.grid.chainage > event.minchainage) &\
+                                           (self.grid.chainage < event.maxchainage)
+                            #self.logger.debug(self.grid.chainagemask)
+                            self.output.blockage.loc[t, self.grid.chainage[chainagemask]] = event.reduce_to
+                            # Remove events
+                            # TODO: make eventclass with mutable flag
+                            self.events.pop(ie)
+            self.logger.debug('output block shape {}'.format(self.output.blockage.shape))
+
+            """
             self.grid.friction = self.blockagemodel(self.output.blockage)
-
-
     def __set_outputpath_from_config(self, configfilepath):
         # Set outputpath
         # ---------------------------------------------------------------------
@@ -357,6 +415,20 @@ class DotterModel:
             fpath = os.path.join(self.outputpath, '{}.csv'.format(variable))
             data.to_csv(fpath)
             self.logger.info('Written {} to {}'.format(variable, fpath))
+
+    def __parseevents(self):
+        self.events = list()
+        config = ConfigParser()
+        config.read(self.files.events)
+        for event in config:
+            if not(event=="DEFAULT"):
+                self.logger.debug('Parsing event {}'.format(event))
+                eventdict = {'event': config[event]}
+                eventdict['event']['name'] = event
+                eventdict['event']['triggered'] = 'False'
+                pdict = utils.parse_dict(eventdict, typedict=utils.eventypes)['event']
+                self.events.append(containers.EventContainer(**pdict))
+        self.logger.debug('events: {}'.format(self.events))
 
     @staticmethod
     def pglinear(blockage):

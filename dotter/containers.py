@@ -38,22 +38,12 @@ VegetationContainer = namedtuple('VegetationContainer', ['name', 'tstart', 'tsto
                                                          'maximumcover', 'density',
                                                          'stemheight', 'stemdiameter'])
 
+EventContainer = namedtuple('Event', ['eventtype', 'tstart', 'minchainage',
+                                              'maxchainage', 'reduce_to', 'maximum_blockage',
+                                              'triggered', 'name'])
+
 for container in [ParameterContainer, FileContainer, SamplesContainer, ResultsContainer]:
     container.__new__.__defaults__ = (None,) * len(container._fields)
-
-
-class Event:
-    """
-    Container for data of events.
-    """
-    def __init__(self, eventdict):
-        self.name = eventdict['name']
-        self.effectivity = float(eventdict['effectivity'])
-        self.min = float(eventdict['range_min'])
-        self.max = float(eventdict['range_max'])
-        self.time = datetime.strptime(eventdict['time'], '%d/%m/%Y')
-        self.triggered = False
-
 
 
 class GeometryGrid:

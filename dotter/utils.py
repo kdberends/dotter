@@ -34,6 +34,17 @@ growthmodel=str
 blockagemodel=str
 """
 
+eventypes= """[event]
+eventtype=str
+tstart=datetime
+minchainage=float
+maxchainage=float
+reduce_to=float
+maximum_blockage=float
+triggered=bool
+name=str
+"""
+
 datetimeformat = '%d/%m/%Y'
 # =============================================================================
 # Definitions
