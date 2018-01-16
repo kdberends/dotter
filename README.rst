@@ -4,6 +4,7 @@ Dotter
 |Build|
 |Cover|
 |Lic|
+|Doc|
 
 This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation.
 
@@ -75,3 +76,7 @@ The dotter consortium:
 
 .. |Lic| image:: https://img.shields.io/github/license/kdberends/dotter.svg
    :target: https://github.com/kdberends/dotter/blob/master/LICENSE.txt
+
+.. |Doc| image:: https://img.shields.io/readthedocs/dotter.svg
+   :target: http://dotter.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
