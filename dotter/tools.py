@@ -5,8 +5,9 @@ Dottermodel tools
 # =============================================================================
 # Imports
 # =============================================================================
-from copy import copy
+from copy import copy, deepcopy
 from . import utils
+from . import models
 from scipy import optimize
 import numpy as np
 from tqdm import tqdm
@@ -16,26 +17,24 @@ import matplotlib.pyplot as plt
 # Tools
 # =============================================================================
 
-def maaibos(model, discharges=None, normative_friction=0.03, show=False):
+def maaibos(model, discharges=None, critical_friction=0.15, show=False, configfile=None):
     """
     predictive use (at different Q)
     """
 
-    # generate QH
+    # generate QH at 'critical friction'
     # -------------------------------------------------------------------------
     discharge_restore = copy(model.grid.discharge)
     friction_restore = copy(model.grid.friction)
 
     model.logger.info('Generating QH for normative friction')
-    QHdischarges = np.linspace(model.grid.discharge.min().min(),
-                               np.max([model.grid.discharge.max().max(),
-                                       np.max(discharges)]),
-                               20)
+    QHdischarges = np.linspace(0, model.grid.discharge.max().max(), 20)
 
-    model.grid.friction[:] = normative_friction
+    model.grid.friction[:] = critical_friction
+
     upstream = list()
     for discharge in tqdm(QHdischarges):
-        model.grid.set_discharge(discharge)
+        model.grid.quickset_discharge(discharge)
         model.run(timesteps=[model.grid.time[0]], progressbar=False)
         upstream.append(model.output.waterlevel.iloc[0, 0])
 
@@ -46,14 +45,13 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
     model.grid.discharge = copy(discharge_restore)
     model.grid.friction = copy(friction_restore)
 
-    # Get scenario results
-    # -------------------------------------------------------------------------
-    discharge_levels = list()
-    for discharge in discharges:
-        model.grid.set_discharge(discharge)
-        model.logger.info('Running model for q = {}'.format(discharge))
-        model.run()
-        discharge_levels.append(copy(model.output.waterlevel.iloc[:, 0]))
+    model.run()
+    modelled_upstream = model.output.waterlevel.iloc[:, 0]
+
+    if configfile is not None:
+        calmodel = models.DotterModel(configfile)
+        calibrated_roughness = estimate_roughness(calmodel, every=10)
+
 
 
     # Restore previous conditions
@@ -61,58 +59,39 @@ def maaibos(model, discharges=None, normative_friction=0.03, show=False):
     model.grid.discharge = copy(discharge_restore)
     model.grid.friction = copy(friction_restore)
 
-    model.run()
-    modelled = model.output.waterlevel.iloc[:, 0]
-
-    # Get measurements
+    # Get measurements and scenario results
     # -------------------------------------------------------------------------
     fig = plt.figure(figsize=(10,4))
     axs = list()
     axs.append(fig.add_subplot(211))
-    axs.append(fig.add_subplot(212))
+    axs.append(fig.add_subplot(223))
+    axs.append(fig.add_subplot(224))
 
-    scenslopes = []
-    for i, discharge in enumerate(discharges):
-        scenslopes.append(discharge_levels[i] - model.grid.downstream)
 
-    measured_slope = model.grid.upstream - model.grid.downstream
-    normative_slope = np.array(qh(model.grid.discharge.iloc[:, 0].values) - model.grid.downstream)
-    relative_slope = measured_slope / normative_slope
+    slope_factors = np.linspace(-1, 1, 20)
+    vs = np.interp(slope_factors, [-1, 0, 1], [-1, 0, +1])
 
-    relscenslopes = []
-    for i, discharge in enumerate(discharges):
-        relscenslopes.append((discharge_levels[i] - model.grid.downstream) / normative_slope)
-    relscenslopes = np.array(relscenslopes)
-
-    # Plot gradient
-    minslope = np.min([np.min(relative_slope), relscenslopes.min().min()])
-    maxslope = np.max([np.max(relative_slope), relscenslopes.max().max()])
-    slope_factors = np.linspace(minslope, maxslope, 25)
-
-    vs = np.interp(slope_factors, [minslope, 0, maxslope], [+1, 0, -1])
     vs_matrix = np.array([vs] * 2)
 
     # Plot ever
     # ------------------------------------------------------------------------
-    axs[1].pcolormesh([model.grid.time[0], model.grid.time[-1]],
+    axs[0].pcolormesh([model.grid.time[0], model.grid.time[-1]],
                       slope_factors, vs_matrix.T, cmap="RdYlGn")
+    axs[0].plot(model.grid.time, [0] * len(model.grid.time), '-k')
+    axs[0].plot(model.grid.time, qh(model.grid.discharge.iloc[:, 0]) - model.grid.upstream, '--k')
+    axs[0].plot(model.grid.time, qh(model.grid.discharge.iloc[:, 0]) - modelled_upstream, '-c')
 
-    axs[0].plot(model.grid.time, modelled - model.grid.downstream, '.g')
-    axs[0].plot(model.grid.time, model.grid.upstream - model.grid.downstream, '.')
     axs[0].set_ylabel('$\Delta H$')
-    for scenslope in scenslopes:
-        axs[0].plot(model.grid.time, scenslope, '--k', linewidth=0.5)
-        axs[0].text(model.grid.time[-1], scenslope[-1], 'Q={} $m^3/s$'.format(discharge))
 
+    q = np.linspace(0, model.grid.discharge.max().max(), 100)
+    axs[1].plot(q, qh(q), '-r', label='Critical QH')
+    axs[1].plot(model.grid.discharge.iloc[:, 0], model.grid.upstream, '.k')
 
-    for relscenslope in relscenslopes:
-        axs[1].plot(model.grid.time, relscenslope, '--k', linewidth=0.5)
-        axs[1].text(model.grid.time[-1], relscenslope[-1], 'Q={} $m^3/s$'.format(discharge))
+    axs[2].plot(model.grid.time, model.grid.friction.iloc[:, 0], '-c')
+    if configfile is not None:
+        axs[2].plot(model.grid.time, calibrated_roughness.iloc[:, 0], '--k')
 
-    axs[1].plot(model.grid.time, relative_slope, '.-k', label='measurements')
-    axs[1].legend()
-    axs[1].set_ylabel('$\Delta H / \Delta H_n$')
-
+    axs[2].plot(model.grid.time, [critical_friction] * len(model.grid.time), '--r')
     for ax in axs:
         utils.two_axes_style(ax)
     if show:
@@ -136,10 +115,13 @@ def estimate_roughness(model, every=1):
                                                                method="Nelder-Mead",
                                                                options=dict(maxiter=50))
             guess = res.x[0]
+
     # Clip roughness to values higher than 0
     model.grid.friction = model.grid.friction.clip(lower=0)
     # Linearly interpolate between optimized times
     model.grid.friction = model.grid.friction.interpolate(method='time', axis=0)
+
+    return model.grid.friction
 
 def blockage_analysis(model):
     """
@@ -207,7 +189,7 @@ def __objectivefunction(n, *args):
 
     # Set roughness and run model
     model.grid.friction.loc[time] = n
-    model.run(timesteps=[time], progressbar=False)
+    model.run(timesteps=[time], progressbar=False, output_to_file=False)
 
     modelled = model.output.waterlevel.iloc[:, 0][time]
     measured = model.grid.upstream[time]

@@ -132,19 +132,15 @@ class GeometryGrid:
 
         return np.array(time)
 
-    def set_discharge(self, discharge):
+    def quickset_discharge(self, discharge):
         """
-        sets discharge, taking into account laterals.
+        sets discharge 
 
         Always call after set_boundaries
         """
 
         self.discharge[:] = discharge
-        if self.laterals is not None:
-            for lateralchainage, factor in zip(self.laterals.x, self.laterals.factor):
-                ind = np.where(self.chainage > lateralchainage)[0][0]
-                indlen = len(self.chainage) - ind
-                self.discharge.iloc[:, ind:] = np.tile(self.discharge.iloc[:, 0] * factor, (indlen, 1)).T
+
 
     def set_boundaries(self, data, laterals=None):
         """

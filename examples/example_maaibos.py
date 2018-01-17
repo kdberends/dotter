@@ -12,11 +12,15 @@
 # Imports & Function definitions
 # =============================================================================
 from dotter.models import DotterModel
-
+from dotter import tools
+from copy import deepcopy, copy
 # =============================================================================
 # Parameters
 # =============================================================================
+configfile = 'cases/vegetation/config.ini'
 
-deltabeek = DotterModel('cases/grotebeek/config.ini')
 
-deltabeek.run()
+deltabeek = DotterModel(configfile)
+#tools.estimate_roughness(model, every=15)
+
+tools.maaibos(model=deltabeek, discharges=[1, 2], show=True, configfile=configfile)
