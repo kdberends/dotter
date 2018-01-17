@@ -82,7 +82,7 @@ class DotterModel:
         elif dashtype == 2:
             self.__dash_output(show=show)
 
-    def run(self, timesteps='all', progressbar=True):
+    def run(self, timesteps='all', progressbar=True, output_to_file=False):
         """
         solves the ode and stores results
         """
@@ -94,7 +94,8 @@ class DotterModel:
         self.__bacsfort(timesteps, progressbar=progressbar)
 
         # Write output
-        self.__write_output()
+        if output_to_file:
+            self.__write_output()
 
     # =============================================================================
     # private methods
@@ -152,7 +153,7 @@ class DotterModel:
                                          self.grid.samples.X.T[0],
                                          self.grid.samples.friction[0])
             # SET INITIAL
-            self.output.blockage[:] = np.tile(initial_blockage, (183, 1))
+            self.output.blockage[:] = np.tile(initial_blockage, (len(self.grid.time), 1))
 
             # Solve
 

@@ -163,11 +163,14 @@ class GeometryGrid:
 
         self.laterals = laterals
         if laterals is not None:
-            for lateralchainage, factor in zip(laterals.x, laterals.factor):
+            for lateralchainage, lateralname in zip(laterals.chainage, laterals.name):
                 ind = np.where(self.chainage > lateralchainage)[0][0]
                 indlen = len(self.chainage) - ind
-                self.logger.debug('Lateral of factor: {} input at x: {}'.format(factor, lateralchainage))
-                self.discharge.iloc[:, ind:] = np.tile(self.discharge.iloc[:, 0] * factor, (indlen, 1)).T
+                self.logger.debug('Lateral {} inserted at chainage {}'.format(lateralname, lateralchainage))
+
+                # interpolate and add lateral discharge to grid
+                qlat = np.interp(gridtime, datatime, data[lateralname])
+                self.discharge.iloc[:, ind:] = np.tile(self.discharge.iloc[:, 0] + qlat, (indlen, 1)).T
         # Downstream
         # ---------------------------------------------------------------------
         H = np.interp(gridtime, datatime, data['downstream'])
