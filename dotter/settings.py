@@ -70,6 +70,12 @@ def set_plotstyle(style='', palette=flatui_r, scale=1.2):
                 font_scale=scale,
                 style='whitegrid')
 
+def gridbox_style(ax):
+    ax.spines['right'].set_visible(True)
+    ax.spines['top'].set_visible(True)
+    ax.spines['left'].set_linewidth(1)
+    ax.grid(True)
+
 def two_axes_style(ax):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)

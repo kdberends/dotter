@@ -23,6 +23,7 @@ flatui_r = list(reversed(flatui))
 
 # Configuration file parsing types
 configtypes = """[parameters]
+datetimefmt=str
 geometrytype=int
 g=float
 tstart=datetime
@@ -156,6 +157,15 @@ def two_axes_style(ax):
     ax.spines['bottom'].set_edgecolor('k')
     ax.spines['bottom'].set_linewidth(2)
     ax.grid(False)
+
+
+def gridbox_style(ax, scale=1):
+    set_plotstyle(scale=scale)
+    ax.spines['right'].set_visible(True)
+    ax.spines['top'].set_visible(True)
+    ax.spines['left'].set_linewidth(1)
+    ax.grid(True)
+
 
 def DatetimeToTimestamp(dates):
     for d in dates:

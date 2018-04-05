@@ -4,7 +4,7 @@
 #
 # Author: Koen Berends
 # Contact: k.d.berends@utwente.nl & koen.berends@utwente.nl
-# Copyright (c) 2017 Deltares
+# Copyright (c) 2017 Deltares 
 # Copyright (c) 2017 University of Twente
 
 
@@ -13,14 +13,21 @@
 # =============================================================================
 from dotter.models import DotterModel
 from dotter import tools
-from copy import deepcopy, copy
 # =============================================================================
 # Parameters
 # =============================================================================
-configfile = 'cases/vegetation/config.ini'
+configfile = 'cases/grotebeek_maaibos/config.ini'
 
 
 deltabeek = DotterModel(configfile)
 #tools.estimate_roughness(model, every=15)
 
-tools.maaibos(model=deltabeek, discharges=[1, 2], show=True, configfile=configfile)
+deltabeek.run()
+#deltabeek.dash(dashtype=1, show=False)
+deltabeek.dash(dashtype=2, show=False)
+
+tools.maaibos(model=deltabeek, 
+              critical_friction=0.10, 
+              show=True, 
+              every=5,
+              configfile=configfile)

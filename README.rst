@@ -10,6 +10,9 @@ This repository contains a set of eco-hydraulic tools to analyse (small) streams
 
 The dottertools are distributed as a Python package.
 
+**UNDER DEVELOPMENT**
+This package is currently under active development and has very little in the way of testing. You may well have problems running it. 
+
 Getting started
 ===========
 

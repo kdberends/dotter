@@ -5,14 +5,15 @@ Custom container classes to store data
 # =============================================================================
 # Imports
 # =============================================================================
-from configparser import ConfigParser
-from datetime import datetime, timedelta
+
+from datetime import timedelta
 from collections import namedtuple
 import pandas as pd
 import numpy as np
-from scipy.interpolate import UnivariateSpline, griddata, interp1d
+from scipy.interpolate import griddata, interp1d
 from . import utils
 import matplotlib.pyplot as plt
+
 # =============================================================================
 # Classes
 # =============================================================================
@@ -21,11 +22,12 @@ ParameterContainer = namedtuple('Parameters', ['g', 'dx', 'dt',
                                                'tstart', 'tstop',
                                                'geometrytype',
                                                'frictionmodel', 'growthmodel',
-                                               'blockagemodel'])
+                                               'blockagemodel',
+                                               'datetimefmt'])
 
 FileContainer = namedtuple('Files', ['geometry', 'vegetation',
                                      'events', 'laterals', 'measurements'])
-
+MeasurementContainer = namedtuple('Measurements', ['time', 'discharge', 'upstream', 'downstream'])
 SamplesContainer = namedtuple('Samples', ['X', 'Y', 'Z',
                                           'friction'])
 
@@ -42,6 +44,8 @@ EventContainer = namedtuple('Event', ['eventtype', 'tstart', 'minchainage',
                                               'maxchainage', 'reduce_to', 'maximum_blockage',
                                               'triggered', 'name'])
 
+# Setting default values. This is necessary to avoid exceptions when config files
+# do not have all possible parameters declared. 
 for container in [ParameterContainer, FileContainer, SamplesContainer, ResultsContainer]:
     container.__new__.__defaults__ = (None,) * len(container._fields)
 
@@ -146,6 +150,7 @@ class GeometryGrid:
         """
         Interpolates boundary conditions to the grid
         """
+        self.logger.info('interpolating boundaries to grid')
         datatime = list(utils.DatetimeToTimestamp(pd.to_datetime(data['date'])))
         gridtime = list(utils.DatetimeToTimestamp(self.time))
 
@@ -174,9 +179,14 @@ class GeometryGrid:
                                     data=H,
                                     dtype='float')
 
-        # Downstream
+        # Upstream
         # ---------------------------------------------------------------------
         H = np.interp(gridtime, datatime, data['upstream'])
+
+        self.measurements = MeasurementContainer(time=pd.to_datetime(data['date']),
+                                                 discharge=data['discharge'],
+                                                 upstream=data['upstream'],
+                                                 downstream=data['downstream'])
         self.upstream = pd.Series(index=self.time,
                                   data=H,
                                   dtype='float')

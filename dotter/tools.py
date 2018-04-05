@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 # Tools
 # =============================================================================
 
-def maaibos(model, discharges=None, critical_friction=0.15, show=False, configfile=None):
+def maaibos(model, discharges=None, critical_friction=0.15, show=False, every=10, configfile=None, steadyq=2):
     """
     predictive use (at different Q)
     """
@@ -45,16 +45,19 @@ def maaibos(model, discharges=None, critical_friction=0.15, show=False, configfi
     model.grid.discharge = copy(discharge_restore)
     model.grid.friction = copy(friction_restore)
 
+    #model.grid.discharge[:] = steadyq
+
     model.run()
     modelled_upstream = model.output.waterlevel.iloc[:, 0]
-
+    modelled_discharge = model.grid.discharge.iloc[:, 0]
+    model_maaibos = qh(modelled_discharge) - modelled_upstream
     if configfile is not None:
         calmodel = models.DotterModel(configfile)
-        calibrated_roughness = estimate_roughness(calmodel, every=10)
+        calibrated_roughness = estimate_roughness(calmodel, every=every)
 
 
 
-    # Restore previous conditions
+    # Restore previous conditions 
     # -------------------------------------------------------------------------
     model.grid.discharge = copy(discharge_restore)
     model.grid.friction = copy(friction_restore)
@@ -75,25 +78,37 @@ def maaibos(model, discharges=None, critical_friction=0.15, show=False, configfi
 
     # Plot ever
     # ------------------------------------------------------------------------
-    axs[0].pcolormesh([model.grid.time[0], model.grid.time[-1]],
-                      slope_factors, vs_matrix.T, cmap="RdYlGn")
-    axs[0].plot(model.grid.time, [0] * len(model.grid.time), '-k')
-    axs[0].plot(model.grid.time, qh(model.grid.discharge.iloc[:, 0]) - model.grid.upstream, '--k')
-    axs[0].plot(model.grid.time, qh(model.grid.discharge.iloc[:, 0]) - modelled_upstream, '-c')
+    gridtime = [t.timetuple().tm_yday for t in model.grid.time]
+    measurementtime = [t.timetuple().tm_yday for t in model.grid.measurements.time]
 
-    axs[0].set_ylabel('$\Delta H$')
+    axs[0].pcolormesh([gridtime[0], gridtime[-1]],
+                      slope_factors, vs_matrix.T, cmap="RdYlGn")
+    axs[0].plot(gridtime, [0] * len(gridtime), '-r', label='kritische lijn')
+    #axs[0].plot(model.grid.time, qh(model.grid.discharge.iloc[:, 0]) - model.grid.upstream, '--k')
+    axs[0].plot(measurementtime, qh(model.grid.measurements.discharge) - model.grid.measurements.upstream, '.k', label='metingen')
+    
+    axs[0].plot(gridtime, model_maaibos, '-c', label='Modelvoorspelling')
+
+    axs[0].set_ylabel('Verschil')
 
     q = np.linspace(0, model.grid.discharge.max().max(), 100)
     axs[1].plot(q, qh(q), '-r', label='Critical QH')
     axs[1].plot(model.grid.discharge.iloc[:, 0], model.grid.upstream, '.k')
+    #axs[1].plot(model.grid.measurements['discharge'], model.grid.measurements['upstream'], '.k')
 
-    axs[2].plot(model.grid.time, model.grid.friction.iloc[:, 0], '-c')
+    axs[2].plot(gridtime, model.grid.friction.iloc[:, 0], '-c')
     if configfile is not None:
-        axs[2].plot(model.grid.time, calibrated_roughness.iloc[:, 0], '--k')
+        axs[2].plot(gridtime, calibrated_roughness.iloc[:, 0], '--k')
 
-    axs[2].plot(model.grid.time, [critical_friction] * len(model.grid.time), '--r')
-    for ax in axs:
-        utils.two_axes_style(ax)
+    axs[2].plot(gridtime, [critical_friction] * len(gridtime), '--r')
+    axs[0].set_ylim([-1, 1])
+    axs[1].set_xlabel('Afvoer')
+    axs[1].set_ylabel('Bovenstroomse waterstand')
+    axs[2].set_ylabel('Manning n')
+    axs[0].legend()
+    utils.two_axes_style(axs[0])
+    utils.gridbox_style(axs[1])
+    utils.gridbox_style(axs[2])
     if show:
         plt.show()
 
@@ -109,18 +124,19 @@ def estimate_roughness(model, every=1):
     model.grid.friction[:] = np.nan
     for i, t in enumerate(tqdm(model.grid.time)):
         guess = 0.03
-        if i % every == 0:
-            res = optimize.minimize(__objectivefunction, guess, args=[model,t],
-                                                               tol=0.001,
-                                                               method="Nelder-Mead",
-                                                               options=dict(maxiter=50))
-            guess = res.x[0]
+        if (model.grid.upstream[i] - model.grid.downstream[i]) > 0:
+            if i % every == 0:
+                res = optimize.minimize(__objectivefunction, guess, args=[model,t],
+                                                                   tol=0.001,
+                                                                   method="Nelder-Mead",
+                                                                   options=dict(maxiter=50))
+                guess = res.x[0]
 
     # Clip roughness to values higher than 0
     model.grid.friction = model.grid.friction.clip(lower=0)
     # Linearly interpolate between optimized times
     model.grid.friction = model.grid.friction.interpolate(method='time', axis=0)
-
+    model.output.friction[:] = model.grid.friction[:]
     return model.grid.friction
 
 def blockage_analysis(model):
