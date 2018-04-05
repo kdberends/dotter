@@ -426,6 +426,7 @@ class DotterModel:
         """
         laterals = None
         if os.path.isfile(self.files.measurements):
+            print (self.dateformat)
             parser = lambda date: pd.datetime.strptime(date, self.dateformat)
             data = pd.read_csv(self.files.measurements, header=0,
                                                         parse_dates=[0],
