@@ -1,3 +1,4 @@
--r ../test-requirements.txt
+# other requirements
+../test-requirements.txt
 # to install dotter
 .
