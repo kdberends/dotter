@@ -1,4 +1,10 @@
-# other requirements
-../test-requirements.txt
-# to install dotter
+numpy>=1.13
+scipy>=0.19.1
+matplotlib>=2.0
+xlrd
+pandas>=0.22
+seaborn>=0.8.1
+ipywidgets
+nbformat>=4.2
+tqdm
 .
