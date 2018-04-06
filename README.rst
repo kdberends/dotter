@@ -5,6 +5,8 @@ Dotter
 |Cover|
 |Lic|
 |Doc|
+|Binder|
+
 
 This repository contains a set of eco-hydraulic tools to analyse (small) streams. It is aimed at (regional) water managers to aid in getting insight, decision making and visualisation.
 
@@ -70,3 +72,5 @@ information on PyScaffold see http://pyscaffold.readthedocs.org/.
 .. |Doc| image:: https://img.shields.io/readthedocs/dotter.svg
    :target: http://dotter.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+
+.. |Binder| image:: https://mybinder.org/badge.svg :target: https://mybinder.org/v2/gh/kdberends/dotter/master?filepath=examples%2Fnotebooks

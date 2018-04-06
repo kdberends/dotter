@@ -23,6 +23,7 @@ def test_trapezoidal_profile(local_run=False):
 
     # The accuracy of the numerical resolution depends on the h_resolution
     deltabeek.grid.h_resolution = 100
+    deltabeek.grid.max_depth = 5
     deltabeek.grid.generate_grid()
     waterlevels = np.linspace(0, 4, 1000)
 

@@ -25,6 +25,11 @@ def test_backwater():
     """
     deltabeek = DotterModel('tests/testcases/backwater/config.ini')
 
+    # The accuracy of the numerical resolution depends on the h_resolution
+    deltabeek.grid.h_resolution = 50
+    deltabeek.grid.max_depth = 5
+    deltabeek.grid.generate_grid()
+
     # Equilibrium depth
     depth = 1.568138
 
