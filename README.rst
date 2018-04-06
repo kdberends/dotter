@@ -73,4 +73,5 @@ information on PyScaffold see http://pyscaffold.readthedocs.org/.
    :target: http://dotter.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. |Binder| image:: https://mybinder.org/badge.svg :target: https://mybinder.org/v2/gh/kdberends/dotter/master?filepath=examples%2Fnotebooks
+.. |Binder| image:: https://mybinder.org/badge.svg 
+   :target: https://mybinder.org/v2/gh/kdberends/dotter/master?filepath=examples/notebooks
