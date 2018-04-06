@@ -76,7 +76,7 @@ def parse_dict(input_dict, typedict=configtypes):
 
     return P
 
-def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
+def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False, loggerlevel='info', name=__name__):
     """
     Returns a logger object which:
     -
@@ -87,7 +87,7 @@ def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
     else:
         mode = 'a'
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(name)
     if not logger.handlers:
         logger.setLevel(logging.DEBUG)
 
@@ -97,7 +97,18 @@ def get_logger(outputpath=os.getcwd(), logfile='dotter.log', overwrite=False):
 
         # the stream prints info and above (error, warning, critical) to console
         streamhandler = logging.StreamHandler()
-        streamhandler.setLevel(logging.DEBUG)
+
+        if loggerlevel.lower() == 'debug':
+            streamhandler.setLevel(logging.DEBUG)
+        elif loggerlevel.lower() == 'info':
+            streamhandler.setLevel(logging.INFO)
+        elif loggerlevel.lower() == 'notset':
+            streamhandler.setLevel(logging.NOTSET)
+        elif loggerlevel.lower() == 'silent':
+            streamhandler.setLevel(60)
+        else:
+            streamhandler.setLevel(logging.INFO)
+
 
         # create a logging format
         formatter = logging.Formatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s',

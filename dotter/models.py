@@ -7,10 +7,10 @@ Dottermodel main class
 # =============================================================================
 import matplotlib as mpl
 import os
-mpl.use('Agg')
-if not("DISPLAY" in os.environ):
-    print('no display found. Using non-interactive Agg backend')
-    mpl.use('Agg')
+#mpl.use('Agg')
+#if not("DISPLAY" in os.environ):
+#    print('no display found. Using non-interactive Agg backend')
+#    mpl.use('Agg')
 from . import utils
 from . import containers
 import os
@@ -27,9 +27,19 @@ from datetime import timedelta, datetime
 
 class DotterModel:
 
-    def __init__(self, configfilepath):
+    def __init__(self, configfilepath,  loggerlevel='debug'):
+        """
+        args:
+
+        configfilepath: path to config file
+        loggerlevel: level of output displayed to screen:
+                        
+                        - debug
+                        - info
+                        - notest
+        """
         self.outputpath = ''  # Path to output directory
-        self.logger = utils.get_logger(self.outputpath, overwrite=True)
+        self.logger = utils.get_logger(self.outputpath, overwrite=True, loggerlevel=loggerlevel)
         self.maxwidth = 20   # to generate trapezoidal bathy
         self.vegetationdefs = list()
         self.blockagemodel = self.pggeneral
@@ -37,9 +47,7 @@ class DotterModel:
         self.frictionmodel = self.__manning
 
         self.__set_outputpath_from_config(configfilepath)
-        self.load(configfilepath)
-
-        
+        self.load(configfilepath)    
 
     def load(self, configfilepath):
         """
@@ -139,6 +147,9 @@ class DotterModel:
         friction uav maps
         """
         if self.parameters.frictionmodel.lower() == 'stationary':
+            """
+            Stationary 
+            """
             f = np.interp(self.grid.chainage,
                           self.grid.samples.X.T[0],
                           self.grid.samples.friction[0])
@@ -374,7 +385,7 @@ class DotterModel:
         """
 
         geom = pd.read_excel(self.files.geometry)
-        self.maxwidth = 20#np.max(geom['W']) * 4
+        self.maxwidth = 50#np.max(geom['W']) * 4
         self.y_resolution = 20
         X = list()
         Y = list()
@@ -426,7 +437,6 @@ class DotterModel:
         """
         laterals = None
         if os.path.isfile(self.files.measurements):
-            print (self.dateformat)
             parser = lambda date: pd.datetime.strptime(date, self.dateformat)
             data = pd.read_csv(self.files.measurements, header=0,
                                                         parse_dates=[0],
@@ -451,6 +461,10 @@ class DotterModel:
             data.to_csv(fpath)
             if verbose:
                 self.logger.info('Written {} to {}'.format(variable, fpath))
+
+        np.savetxt(os.path.join(self.outputpath, 'X.csv'), self.grid.X)
+        np.savetxt(os.path.join(self.outputpath, 'Y.csv'), self.grid.Y)
+        np.savetxt(os.path.join(self.outputpath, 'Z.csv'), self.grid.Z)
 
     def __parseevents(self):
         self.events = list()

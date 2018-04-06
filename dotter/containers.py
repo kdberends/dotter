@@ -71,7 +71,7 @@ class GeometryGrid:
         self.time = self.get_timevector()
         self.chainage = self.get_chainagevector()
         self.h_resolution = 50
-        self.max_depth = 5
+        self.max_depth = 70
         self.X = None
         self.Y = None
         self.Z = None
@@ -144,7 +144,6 @@ class GeometryGrid:
         """
 
         self.discharge[:] = discharge
-
 
     def set_boundaries(self, data, laterals=None):
         """
