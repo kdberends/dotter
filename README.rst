@@ -13,23 +13,21 @@ This repository contains a set of eco-hydraulic tools to analyse (small) streams
 The dottertools are distributed as a Python package.
 
 **UNDER DEVELOPMENT**
-This package is currently under active development and has very little in the way of testing. You may well have problems running it. 
+This package is currently under active development and has very little in the way of testing. You may well have problems running it. Use at your own risk. 
 
 Getting started
 ===========
 
-The easiest way to get started is to try out the interactive notebooks!
+The easiest way to get started is to try out the interactive notebooks on binder. 
 
-To learn more about Dotter, see our `documentation <https://github.com/kdberends/dotter/wiki>`__
-
-
+You can also visit our documentation. 
 
 
 Installation
 ===========
 
 
-The current development branch of dotter can be installed from GitHub, also using ``pip``:
+The current development branch of dotter can be installed from GitHub using ``pip``:
 
 ::
 
@@ -44,6 +42,8 @@ SciPy, Pandas, and Matplotlib (see ``requirements.txt`` for version
 information).
 
 Additionally, some notebooks make use of interactive widgets. To be able to correctly run the notebooks, you need to have ipywidgets installed and enabled; see `here <https://ipywidgets.readthedocs.io/en/stable/user_install.html>`__
+
+To compile the sphinx documentation you need `pandoc <http://pandoc.org/>`_ installed as well. 
 
 License
 =======

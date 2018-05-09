@@ -14,6 +14,7 @@ import os
 from . import utils
 from . import containers
 import os
+import random
 from tqdm import tqdm
 import numpy as np
 from configparser import ConfigParser
@@ -39,7 +40,7 @@ class DotterModel:
                         - notest
         """
         self.outputpath = ''  # Path to output directory
-        self.logger = utils.get_logger(self.outputpath, overwrite=True, loggerlevel=loggerlevel)
+        self.logger = utils.get_logger(self.outputpath, overwrite=True, loggerlevel=loggerlevel, name=str(random.getrandbits(128)))
         self.maxwidth = 20   # to generate trapezoidal bathy
         self.vegetationdefs = list()
         self.blockagemodel = self.pggeneral
@@ -199,8 +200,8 @@ class DotterModel:
                 for ie, event in enumerate(self.events):
                     if not(event.triggered) and (t > event.tstart):
                         self.logger.info('Triggered event {} on {}'.format(event, t))
-                        chainagemask = (self.grid.chainage > event.minchainage) &\
-                                       (self.grid.chainage < event.maxchainage)
+                        chainagemask = (self.grid.chainage >= event.minchainage) &\
+                                       (self.grid.chainage <= event.maxchainage)
                         #self.logger.debug(self.grid.chainagemask)
                         self.output.blockage.loc[t, self.grid.chainage[chainagemask]] = event.reduce_to
                         # Remove events
@@ -469,17 +470,19 @@ class DotterModel:
     def __parseevents(self):
         self.events = list()
         config = ConfigParser()
-        config.read(self.files.events)
-        for event in config:
-            if not(event=="DEFAULT"):
-                self.logger.debug('Parsing event {}'.format(event))
-                eventdict = {'event': config[event]}
-                eventdict['event']['name'] = event
-                eventdict['event']['triggered'] = 'False'
-                pdict = utils.parse_dict(eventdict, typedict=utils.eventypes)['event']
-                self.events.append(containers.EventContainer(**pdict))
-        self.logger.debug('events: {}'.format(self.events))
-
+        if self.files.events is not None:
+            config.read(self.files.events)
+            for event in config:
+                if not(event=="DEFAULT"):
+                    self.logger.debug('Parsing event {}'.format(event))
+                    eventdict = {'event': config[event]}
+                    eventdict['event']['name'] = event
+                    eventdict['event']['triggered'] = 'False'
+                    pdict = utils.parse_dict(eventdict, typedict=utils.eventypes)['event']
+                    self.events.append(containers.EventContainer(**pdict))
+            self.logger.debug('events: {}'.format(self.events))
+        else:
+            self.logger.debug('No events file found')
     # -------------------------------------------------------------------------
     # ode's & solvers
     # -------------------------------------------------------------------------
