@@ -11,3 +11,4 @@ dependencies:
   - ipywidgets
   - nbformat>=4.2
   - tqdm
+  - openpyxl
