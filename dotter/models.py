@@ -385,7 +385,7 @@ class DotterModel:
         Trapezoidal profile excel input
         """
 
-        geom = pd.read_excel(self.files.geometry)
+        geom = pd.read_excel(self.files.geometry, engine='openpyxl')
         self.maxwidth = 50#np.max(geom['W']) * 4
         self.y_resolution = 20
         X = list()
